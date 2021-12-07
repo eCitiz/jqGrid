@@ -223,5 +223,8 @@ $.jgrid.regional["en"] = {
 	},
 	selectLine : "Select row",
 	selectAllLines : "Select all rows",
+	valueCheckbox : "Checkbox",
+	valT : "checked",
+	valF : "unchecked"
 };
 }));

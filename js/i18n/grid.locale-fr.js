@@ -181,5 +181,8 @@ $.jgrid.regional["fr"] = {
 	},
 	selectLine : "Selectionner une ligne",
 	selectAllLines : "Selectionner toutes les lignes",
+	valueCheckbox : "Case à cocher",
+	valT : "cochée",
+	valF : "décochée"
 };
 }));

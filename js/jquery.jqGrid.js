@@ -17599,7 +17599,7 @@ hs=function(w,t,c){return w.each(function(){var s=this._jqm;$(t).each(function()
 		return $.fn.fmatter.defaultFormat(cellval,opts );
 	};
 	$.fn.fmatter.checkbox =function(cval, opts) {
-		var op = $.extend({},opts.checkbox), ds;
+		var op = $.extend({},opts.checkbox), ds, checkboxVal, valtrue, valfalse, lang = Object.keys($.jgrid.regional)[0], title;
 		if(opts.colModel !== undefined && opts.colModel.formatoptions !== undefined) {
 			op = $.extend({},op,opts.colModel.formatoptions);
 		}
@@ -17607,8 +17607,21 @@ hs=function(w,t,c){return w.each(function(){var s=this._jqm;$(t).each(function()
 		if($.fmatter.isEmpty(cval) || cval === undefined ) {cval = $.fn.fmatter.defaultFormat(cval,op);}
 		cval=String(cval);
 		cval=(cval+"").toLowerCase();
+		checkboxVal = $.jgrid.regional[lang].valueCheckbox;
+		valtrue= $.jgrid.regional[lang].valT;	
+		valfalse= $.jgrid.regional[lang].valF;
+		if((checkboxVal !== undefined) && (cval==="true")){
+			title = checkboxVal + " " + valtrue;
+		}
+		else if (checkboxVal !== undefined && cval==="false")
+		{
+			title = checkboxVal+ " " + valfalse;
+		}
+		else {
+			title = cval;
+		} 
 		var bchk = cval.search(/(false|f|0|no|n|off|undefined)/i)<0 ? " checked='checked' " : "";
-		return "<input type=\"checkbox\" " + bchk  + " value=\""+ cval+"\" offval=\"no\" "+ds+ "/>";
+		return "<input title=\" "+title+" \" type=\"checkbox\" " + bchk  + " value=\""+ cval+"\" offval=\"no\" "+ds+ "/>";
 	};
 	$.fn.fmatter.link = function(cellval, opts) {
 		var op = {target:opts.target};
