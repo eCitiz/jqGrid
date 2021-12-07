@@ -219,6 +219,8 @@ $.jgrid.regional["en"] = {
 		freeze : "Freeze",
 		unfreeze : "Unfreeze",
 		reorder : "Move to reorder"
-	}
+	},
+	selectLine : "Select row",
+	selectAllLines : "Select all rows",
 };
 }));

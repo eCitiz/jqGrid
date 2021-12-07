@@ -177,6 +177,8 @@ $.jgrid.regional["fr"] = {
 		freeze : "Figer",
 		unfreeze : "Relâcher",
 		reorder : "Déplacer pour changer l'ordre"
-	}
+	},
+	selectLine : "Selectionner une ligne",
+	selectAllLines : "Selectionner toutes les lignes",
 };
 }));
