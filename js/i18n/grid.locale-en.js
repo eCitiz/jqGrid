@@ -58,7 +58,8 @@ $.jgrid.regional["en"] = {
 		addsubgrup : "Add subgroup",
 		addrule : "Add rule",
 		delgroup : "Delete group",
-		delrule : "Delete rule"
+		delrule : "Delete rule",
+		filterFor : "filter for"
 	},
 	edit : {
 		addCaption: "Add Record",
