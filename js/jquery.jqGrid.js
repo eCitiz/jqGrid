@@ -9811,6 +9811,11 @@ $.jgrid.extend({
 					}
 				});
 			}
+			$(".clearsearchclass",tr).keyup(function(event) {
+				if (event.keyCode === 13) {
+					$(".clearsearchclass",tr).trigger("click");
+				}
+			});
 			$(".clearsearchclass",tr).click(function() {
 				var ptr = $(this).parents("tr").first(),
 				colname = $("td.ui-search-oper", ptr).attr('columname'), coli=0, len = $t.p.colModel.length,
