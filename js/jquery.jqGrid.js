@@ -7997,7 +7997,7 @@ $.extend($.jgrid,{
 			break;
 			case "select" :
 				elem = document.createElement("select");
-				elem.setAttribute("role","select");
+				elem.setAttribute("role","listbox");
 				var msl, ovm = [];
 				if(options.multiple===true) {
 					msl = true;
