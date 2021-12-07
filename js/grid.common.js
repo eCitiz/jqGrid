@@ -34,14 +34,6 @@ $.extend($.jgrid,{
 			if (typeof oncret === 'boolean'  && !oncret ) { return; }
 		}
 		if( o.formprop && thisgrid  && o.form) {
-			var fh = $(selector)[0].style.height,
-			fw = $(selector)[0].style.width;
-			if(fh.indexOf("px") > -1 ) {
-				fh = parseFloat(fh);
-			}
-			if(fw.indexOf("px") > -1 ) {
-				fw = parseFloat(fw);
-			}
 			var frmgr, frmdata;
 			if(o.form==='edit'){
 				frmgr = '#' +$.jgrid.jqID("FrmGrid_"+ o.gb.substr(6));
@@ -51,10 +43,10 @@ $.extend($.jgrid,{
 				frmdata = "viewProp";
 			}
 			$(thisgrid).data(frmdata, {
-				top:parseFloat($(selector).css("top")),
-				left : parseFloat($(selector).css("left")),
-				width : fw,
-				height : fh,
+				top: $.jgrid.floatNum($(selector).css("top")),
+				left : $.jgrid.floatNum($(selector).css("left")),
+				width : $.jgrid.floatNum( $(selector)[0].style.width ),
+				height : $.jgrid.floatNum( $(selector)[0].style.height ),
 				dataheight : $(frmgr).height(),
 				datawidth: $(frmgr).width()
 			});
@@ -93,7 +85,7 @@ $.extend($.jgrid,{
 		mh.className = "ui-jqdialog-titlebar " + classes.header;
 		mh.id = aIDs.modalhead;
 		$(mh).append("<span class='ui-jqdialog-title'>"+p.caption+"</span>");
-		var ahr= $("<a class='ui-jqdialog-titlebar-close "+common.cornerall+"'></a>")
+		var ahr= $("<a class='ui-jqdialog-titlebar-close "+common.cornerall+"' aria-label='Close'></a>")
 		.hover(function(){ahr.addClass(common.hover);},
 			function(){ahr.removeClass(common.hover);})
 		.append("<span class='" + common.icon_base+" " + classes.icon_close + "'></span>");
@@ -522,9 +514,15 @@ $.extend($.jgrid,{
 							}
 							ov = document.createElement("option");
 							ov.setAttribute("role","option");
-							ov.value = sv[0]; ov.innerHTML = sv[1];
+							ov.value = sv[0]; 
+							ov.innerHTML = sv[1];
 							elem.appendChild(ov);
-							if (!msl &&  ($.jgrid.trim(sv[0]) === $.jgrid.trim(vl) || $.jgrid.trim(sv[1]) === $.jgrid.trim(vl))) { ov.selected ="selected"; }
+							if (!msl &&  
+									($.jgrid.trim(sv[0]) === $.jgrid.trim(vl) || 
+									$.jgrid.trim(sv[1]) === $.jgrid.trim(vl))) {
+
+								ov.selected ="selected"; 
+							}
 							if (msl && ($.inArray($.jgrid.trim(sv[1]), ovm)>-1 || $.inArray($.jgrid.trim(sv[0]), ovm)>-1)) {ov.selected ="selected";}
 						}
 					} else if (Object.prototype.toString.call(options.value) === "[object Array]") {
@@ -914,6 +912,16 @@ $.extend($.jgrid,{
 				ret = i;
 				break;
 			}
+		}
+		return ret;
+	},
+	getLastVisibleCol : function( $t ) {
+		var ret = -1;
+		for(var i = $t.p.colModel.length - 1; i>=0; i--) {
+			if($t.p.colModel[i].hidden !== true ) {
+				ret = i;
+				break;
+	}	
 		}
 		return ret;
 	}	

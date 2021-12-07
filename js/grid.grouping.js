@@ -17,6 +17,29 @@
 "use strict";
 //module begin
 $.jgrid.extend({
+	groupingInit : function () {
+		return this.each(function (){
+			var $t = this;
+			$.extend ($t.p.groupingView, {
+				groupField :[],
+				groupOrder:[],
+				groupText:[],
+				groupColumnShow:[],
+				groupSummary:[],
+				showSummaryOnHide: false,
+				sortitems:[],
+				sortnames:[],
+				summary:[],
+				summaryval:[],
+				plusicon: '',
+				minusicon: '',
+				displayField: [],
+				groupSummaryPos:[],
+				formatDisplayField : [],
+				_locgr : false
+			}, true);
+		});
+	},
 	groupingSetup : function () {
 		return this.each(function (){
 			var $t = this, i, j, cml, cm = $t.p.colModel, grp = $t.p.groupingView,
@@ -438,11 +461,14 @@ $.jgrid.extend({
 			$($t).trigger("reloadGrid");
 		});
 	},
-	groupingRemove : function (current) {
+	groupingRemove : function (current, grpViewInit) {
 		return this.each(function(){
 			var $t = this;
 			if(current === undefined) {
 				current = true;
+			}
+			if(grpViewInit === undefined) {
+				grpViewInit = false;
 			}
 			$t.p.grouping = false;
 			if(current===true) {
@@ -457,6 +483,9 @@ $.jgrid.extend({
 				$("#"+$.jgrid.jqID($t.p.id)+" tbody").first().find("tr.jqgrow:hidden").show();
 			} else {
 				$($t).trigger("reloadGrid");
+			}
+			if(grpViewInit) {
+				$($t).jqGrid('groupingInit');
 			}
 		});
 	},
@@ -538,6 +567,7 @@ $.jgrid.extend({
 			$firstHeaderRow = $htable.find(".jqg-first-row-header"),
 			$firstRow,
 			$focusElem = false,
+			frozen = false,
 			//classes = $.jgrid.styleUI[($t.p.styleUI || 'jQueryUI')]['grouping'],
 			base = $.jgrid.styleUI[(ts.p.styleUI || 'jQueryUI')].base;
 			if(!ts.p.groupHeader) {
@@ -559,6 +589,11 @@ $.jgrid.extend({
 				}
 				return -1;
 			};
+			if(ts.p.frozenColumns) {
+				$(ts).jqGrid("destroyFrozenColumns");
+				frozen = true;
+			}
+			
 			if( $(document.activeElement).is('input') || $(document.activeElement).is('textarea') ) {
 				$focusElem = document.activeElement;
 			}
@@ -572,7 +607,7 @@ $.jgrid.extend({
 				cmi = colModel[i];
 				// build the next cell for the first header row
 				thStyle = { height: '0px', width: ths[i].width + 'px', display: (cmi.hidden ? 'none' : '')};
-				$("<th>", {role: 'gridcell'}).css(thStyle).addClass("ui-first-th-"+ts.p.direction).appendTo($firstHeaderRow);
+				$("<th>", {role: 'gridcell'}).css(thStyle).addClass("ui-first-th-"+ts.p.direction + " " + (cmi.labelClasses || "") ).appendTo($firstHeaderRow);
 
 				th.style.width = ""; // remove unneeded style
 				iCol = inColumnHeader(cmi.name, o.groupHeaders);
@@ -592,7 +627,7 @@ $.jgrid.extend({
 					// in the current row will be placed the new column header with the titleText.
 					// The text will be over the cVisibleColumns columns
 					$colHeader = $('<th>').attr({role: "columnheader"})
-						.addClass(base.headerBox+ " ui-th-column-header ui-th-"+ts.p.direction+" "+className)
+						.addClass(base.headerBox+ " ui-th-column-header ui-th-"+ts.p.direction+" "+className + " "+(cmi.labelClasses || ""))
 						//.css({'height':'22px', 'border-top': '0 none'})
 						.html(titleText);
 					if(cVisibleColumns > 0) {
@@ -670,6 +705,9 @@ $.jgrid.extend({
 			if( $.jgrid.trim($("tr.jqg-second-row-header th").eq( 0 ).text()) === "" ) {
 				$("tr.jqg-second-row-header th").eq( 0 ).prepend('&nbsp;');
 			}
+			if(frozen) {
+				$(ts).jqGrid("setFrozenColumns");
+			}			
 		});				
 	},
 	destroyGroupHeader : function(nullHeader) {

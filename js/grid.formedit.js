@@ -233,8 +233,10 @@ $.jgrid.extend({
 							}
 						}
 						$(elc).addClass("FormElement");
-						if( $.inArray(this.edittype, 
-							['text','textarea','password','select', 
+						if(this.edittype === 'select') {
+							$(elc).addClass( styles.selectClass );
+						} else 	if( $.inArray(this.edittype, 
+							['text','textarea','password', 
 							'color', 'date', 'datetime', 'datetime-local','email','month',
 							'number','range', 'search', 'tel', 'time', 'url','week'] ) > -1) {
 							$(elc).addClass( styles.inputClass );
@@ -277,7 +279,7 @@ $.jgrid.extend({
 							$t.p.savedData[nm] = tmp;
 						}
 						if(this.edittype==='custom' && $.jgrid.isFunction(opt.custom_value) ) {
-							opt.custom_value.call($t, $("#"+nm, frmgr),'set',tmp);
+							opt.custom_value.call($t, $("#"+nm, elc),'set',tmp);
 						}
 						$.jgrid.bindEv.call($t, elc, opt);
 						retpos[cnt] = i;
@@ -977,21 +979,13 @@ $.jgrid.extend({
 				overlayClass: p.overlayClass,
 				focusField : p.focusField,
 				onHide :  function(h) {
-					var fh = $('#editmod'+gID)[0].style.height,
-						fw = $('#editmod'+gID)[0].style.width,
+					var fw = $.jgrid.floatNum( $('#editmod'+gID)[0].style.width ),
 						rtlsup = $("#gbox_"+$.jgrid.jqID(gID)).attr("dir") === "rtl" ? true : false;
-					if(fh.indexOf("px") > -1 ) {
-						fh = parseFloat(fh);
-					}
-					if(fw.indexOf("px") > -1 ) {
-						fw = parseFloat(fw);
-					}
-					
 					$($t).data("formProp", {
-						top:parseFloat($(h.w).css("top")),
+						top: $.jgrid.floatNum($(h.w).css("top")),
 						left : rtlsup ? ( $("#gbox_"+$.jgrid.jqID(gID)).outerWidth() - fw - parseFloat($(h.w).css("left")) + 12 ) : parseFloat($(h.w).css("left")),
 						width : fw,
-						height : fh,
+						height : $.jgrid.floatNum( $('#editmod'+gID)[0].style.height ),
 						dataheight : $(frmgr).height(),
 						datawidth: $(frmgr).width()
 					});
@@ -1789,8 +1783,12 @@ $.jgrid.extend({
 					var pos=$.jgrid.findPos(this);
 					pos[0]=Math.round(pos[0]);
 					pos[1]=Math.round(pos[1]);
+					var hg = isNaN(this.p.height) ? $($t.grid.bDiv).height(): this.p.height;
+					if(hg === 0) {
+						hg = 200;
+					}
 					o.alertleft = pos[0] + (this.p.width/2)-parseInt(o.alertwidth,10)/2;
-					o.alerttop = pos[1] + (this.p.height/2)-25;					
+					o.alerttop = pos[1] + (hg/2)-25;
 				}
 				var fs =  $('.ui-jqgrid').css('font-size') || '11px';
 				$.jgrid.createModal(alertIDs,

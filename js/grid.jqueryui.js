@@ -95,6 +95,7 @@ $.jgrid.extend({
 				"axis" : "x",
 				"scrollSensitivity": "1",
 				"items": '>th:not(:has(#jqgh_'+tid+'_cb'+',#jqgh_'+tid+'_rn'+',#jqgh_'+tid+'_subgrid),:hidden)',
+				"cancel": ".sortable-disabled",
 				"placeholder": {
 					element: function(item) {
 						var el = $(document.createElement(item[0].nodeName))
@@ -585,7 +586,11 @@ $.jgrid.extend({
 		return this.each(function(){
 			var $t = this, gID = $.jgrid.jqID($t.p.id), req;
 			if(!$t.grid || !$.fn.resizable) { return; }
-			opts = $.extend({}, opts || {});
+			opts = $.extend(
+				{}, 
+				{ resizeclass : "ui-resizable-icon" },
+				opts || {}
+			);
 			if(opts.alsoResize ) {
 				opts._alsoResize_ = opts.alsoResize;
 				delete opts.alsoResize;
@@ -597,6 +602,23 @@ $.jgrid.extend({
 				delete opts.stop;
 			} else {
 				opts._stop_ = false;
+			}
+			var class_to_add = opts.resizeclass;
+			if($t.p.styleUI !== "jQueryUI") {
+				if(opts.handles) {
+					if(opts.handles.se) {
+						class_to_add += " " +opts.handles.se.replace(".","");
+					} else {
+						opts.handles.se = "."+class_to_add;
+					}
+				} else {
+					opts.handles = {};
+					var test = class_to_add.split(' ');
+					opts.handles.se = "."+test[0];
+				}
+				class_to_add += " ui-resizable-se ui-resizable-handle";
+			
+				$("#gbox_"+gID).append('<span class="'+class_to_add+'"></span>');
 			}
 			opts.stop = function (ev, ui) {
 				$($t).jqGrid('setGridParam',{height:$("#gview_"+gID+" .ui-jqgrid-bdiv").height()});
@@ -615,8 +637,7 @@ $.jgrid.extend({
 				}
 			};
 			if(opts._alsoResize_) {
-				var optstest = "{\'#gview_"+gID+" .ui-jqgrid-bdiv\':true,'" +opts._alsoResize_+"':true}";
-				opts.alsoResize = eval('('+optstest+')'); // the only way that I found to do this
+				opts.alsoResize = "#gview_"+gID+" .ui-jqgrid-bdiv,"+opts._alsoResize_ ;
 			} else {
 				opts.alsoResize = $(".ui-jqgrid-bdiv","#gview_"+gID);
 			}

@@ -279,7 +279,7 @@ $.extend($.jgrid,{
 				'<cellStyleXfs count="1">'+
 					'<xf numFmtId="0" fontId="0" fillId="0" borderId="0" />'+
 				'</cellStyleXfs>'+
-				'<cellXfs count="67">'+
+				'<cellXfs count="68">'+
 					'<xf numFmtId="0" fontId="0" fillId="0" borderId="0" applyFont="1" applyFill="1" applyBorder="1"/>'+
 					'<xf numFmtId="0" fontId="1" fillId="0" borderId="0" applyFont="1" applyFill="1" applyBorder="1"/>'+
 					'<xf numFmtId="0" fontId="2" fillId="0" borderId="0" applyFont="1" applyFill="1" applyBorder="1"/>'+
@@ -360,6 +360,7 @@ $.extend($.jgrid,{
 					'<xf numFmtId="1" fontId="0" fillId="0" borderId="0" applyFont="1" applyFill="1" applyBorder="1" xfId="0" applyNumberFormat="1"/>'+
 					'<xf numFmtId="2" fontId="0" fillId="0" borderId="0" applyFont="1" applyFill="1" applyBorder="1" xfId="0" applyNumberFormat="1"/>'+
 					'<xf numFmtId="170" fontId="0" fillId="0" borderId="0" applyFont="1" applyFill="1" applyBorder="1" xfId="0" applyNumberFormat="1"/>'+
+					'<xf numFmtId="49" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'+
 				'</cellXfs>'+
 				'<cellStyles count="1">'+
 					'<cellStyle name="Normal" xfId="0" builtinId="0" />'+
@@ -729,6 +730,7 @@ $.jgrid.extend({
 			mimetype : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 			maxlength : 40, // maxlength for visible string data
 			onBeforeExport : null,
+			customizeData : null,
 			replaceStr : null,
 			treeindent : ' ',
 			loadIndicator : true // can be a function
@@ -742,7 +744,6 @@ $.jgrid.extend({
 			styleSh = $.parseXML( es['xl/styles.xml']), //xlsx.xl["styles.xml"];
 
 			formats = styleSh.getElementsByTagName("numFmts")[0],
-			fmnt = $(formats.getElementsByTagName("numFmt")),
 			celsX = styleSh.getElementsByTagName("cellXfs")[0],
 
 			xlsx = {
@@ -777,8 +778,9 @@ $.jgrid.extend({
 				} else if( eo.excel_format && !eo.excel_style){
 					// add the sformatter
 					var count = 0,
-					maxfmtid =0;
-					$.each(fmnt, function(i,n) {
+					maxfmtid =0,
+					fmnt = $(formats.getElementsByTagName("numFmt"));
+					$.each( fmnt, function(i,n) {
 						count++;
 						maxfmtid = Math.max(maxfmtid,  parseInt( $(n).attr("numFmtId"), 10) );
 					});
@@ -800,7 +802,9 @@ $.jgrid.extend({
 					celsX.appendChild( mycell );
 					count = parseInt( $(celsX).attr("count"), 10);
 					$(celsX).attr("count", count + 1);
-					eo.excel_style = count+1;
+					if(!eo.excel_style) {
+						eo.excel_style = count+1;
+					}
 				}
 				return eo;
 			};
@@ -819,8 +823,11 @@ $.jgrid.extend({
 				data.header[i] = cm[j].name;
 				data.width[ i ] = 5;
 				data.map[i] = j;
-				data.parser[j] = addStyle( cm[j].hasOwnProperty('exportoptions') ? cm[j].exportoptions : {} );
+				data.parser[j] = addStyle( cm[j].hasOwnProperty('exportoptions') ? $.extend( {}, cm[j].exportoptions ) : {} );
 				i++;
+			}
+			if( $.jgrid.isFunction(o.customizeData) ) {
+				o.customizeData.call($t, data);
 			}
 			function _replStrFunc (v) {
 				return v.replace(/</g, '&lt;')
@@ -845,12 +852,15 @@ $.jgrid.extend({
 							children: [	$.jgrid.makeNode( rels, 'f', { text: v } ) ]
 						});
 			}
-			function _makeCellString ( cellId, text ) {
+			function _makeCellString ( cellId, text, estyle ) {
+				if( estyle === undefined) {
+					estyle = 68;
+				}
 				return $.jgrid.makeNode(
 						rels,
 						'c',
 						{
-							attr: { t: 'inlineStr', r: cellId },
+							attr: { t: 'inlineStr', r: cellId, s: estyle },
 							children:{ row: $.jgrid.makeNode( rels, 'is',
 								{
 									children: {
@@ -892,6 +902,10 @@ $.jgrid.extend({
 					}
 					if(!header) {
 						v = $.jgrid.formatCell( v, data.map[i], row, cm[data.map[i]], $t, 'excel');
+						// convert whitespace from formatter to empty string
+						if(v && (v==='&nbsp;' || v==='&#160;' || (v.length===1 && v.charCodeAt(0)===160))) { 
+							v = '';
+						}
 					}
 					data.width[i] = Math.max(data.width[i], Math.min(parseInt(v.toString().length,10), o.maxlength) );
 					cell = null;
@@ -931,11 +945,18 @@ $.jgrid.extend({
 								break;
 							}
 						}
-					} else if( expo.excel_format !== undefined && expo.excel_style !== undefined && !header && !cell) {
+					} else if( expo.excel_style !== undefined  && !header && !cell) {
 						if(expo.replace_format) {
 							v = expo.replace_format(v);
 						}
+						if(expo.excel_style === 'text') {
+							cell = _makeCellString( cellId, v);
+						} else if (expo.excel_style <= 55) { // cistom
+							cell = _makeCellString( cellId, v, expo.excel_style);
+							//cell = _makeCellSpecial( {r: cellId,s: expo.excel_style}, v );
+						} else {
 						cell = _makeCellSpecial( {r: cellId,s: expo.excel_style}, v );
+						}
 						rowNode.appendChild( cell );
 					}
 					if( ! cell ) {
@@ -952,7 +973,7 @@ $.jgrid.extend({
 							// Replace non standard characters for text output
 							text = ! v.replace ? v : _replStr(v);
 							cell = _makeCellString( cellId, text);
-										}
+						}
 						rowNode.appendChild( cell );
 					}
 				}
